@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Main Website",
+    "url": "https://example.com",
+    "description": "Primary public-facing website"
+  },
+  {
+    "name": "API Server",
+    "host": "192.168.1.10",
+    "port": 8080,
+    "description": "Core REST API"
+  },
+  {
+    "name": "Game Server",
+    "host": "game.example.com",
+    "port": 25565,
+    "description": "Minecraft game server"
+  }
+]

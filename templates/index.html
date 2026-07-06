@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ site_name }}</title>
+  <meta name="description" content="{{ site_description }}" />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="{{ site_name }}" />
+  <meta property="og:description" content="{{ site_description }}" />
+  <meta property="og:type"        content="website" />
+
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script>window.__CHECK_INTERVAL__ = {{ check_interval }};</script>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-wrap">
+        <img class="logo-img" src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ site_name }} logo" />
+        <div>
+          <span class="site-title">{{ site_name }}</span>
+          <div class="site-badge">SYSTEM STATUS</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/api/status" class="btn btn-secondary" target="_blank">JSON API</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Overall status banner ── -->
+  {% if total == 0 %}
+  <div class="overall-banner no_data">
+    <span class="banner-dot"></span>
+    <div class="banner-text">
+      <div class="banner-title">No services configured</div>
+      <div class="banner-sub">Configure services in <code>service_list.json</code> to start monitoring.</div>
+    </div>
+  </div>
+
+  {% elif overall == 'operational' %}
+  <div class="overall-banner operational">
+    <span class="banner-dot"></span>
+    <div class="banner-text">
+      <div class="banner-title">All Systems Operational</div>
+      <div class="banner-sub">Argus is actively monitoring all services. No issues detected.</div>
+    </div>
+    <div class="banner-count">{{ online_count }}/{{ total }} UP</div>
+  </div>
+
+  {% elif overall == 'degraded' %}
+  <div class="overall-banner degraded">
+    <span class="banner-dot"></span>
+    <div class="banner-text">
+      <div class="banner-title">Active Incident / Degraded Performance</div>
+      <div class="banner-sub">Some services are experiencing latency or network connection failures.</div>
+    </div>
+    <div class="banner-count">{{ online_count }}/{{ total }} UP</div>
+  </div>
+
+  {% else %}
+  <div class="overall-banner major_outage">
+    <span class="banner-dot"></span>
+    <div class="banner-text">
+      <div class="banner-title">Major Outage</div>
+      <div class="banner-sub">All monitored infrastructure endpoints are failing to respond.</div>
+    </div>
+    <div class="banner-count">{{ online_count }}/{{ total }} UP</div>
+  </div>
+  {% endif %}
+
+  <!-- ── Services List ── -->
+  {% if services %}
+  <div class="section-title-row">
+    <h2 class="section-title">End-to-End Services</h2>
+    <span class="pulse-indicator">
+      <span class="pulse-indicator-dot"></span> Live
+    </span>
+  </div>
+
+  <div class="services-list">
+    {% for svc in services %}
+    <div class="service-row">
+      <div class="service-header">
+        <div class="service-info-group">
+          <span class="service-name">{{ svc.name }}</span>
+          {% if svc.description %}
+          <span class="service-desc">{{ svc.description }}</span>
+          {% endif %}
+        </div>
+        <div class="service-status-group">
+          <span class="service-status-text {{ 'online' if svc.online else 'offline' }}">
+            {{ 'Operational' if svc.online else 'Outage' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Uptime Timeline Bar (Cloudflare Style) -->
+      <div class="uptime-timeline-container">
+        <div class="uptime-timeline-bar">
+          <!-- Pad remaining ticks if history is under 90 items -->
+          {% set hist_len = svc.history|length %}
+          {% set pad_len = 90 - hist_len %}
+          {% if pad_len > 0 %}
+            {% for i in range(pad_len) %}
+            <div class="tick tick-inactive" title="No data"></div>
+            {% endfor %}
+          {% endif %}
+
+          {% for state in svc.history %}
+            <div class="tick {{ 'tick-up' if state else 'tick-down' }}"
+                 title="Status check: {{ 'Online' if state else 'Offline' }}"></div>
+          {% endfor %}
+        </div>
+
+        <div class="uptime-timeline-footer">
+          <span>90 checks ago</span>
+          <span class="uptime-divider"></span>
+          <span class="uptime-pct">{{ svc.uptime_pct }}% uptime</span>
+          <span class="uptime-divider"></span>
+          <span>Today</span>
+        </div>
+      </div>
+
+      <!-- Service Details / Diagnostics -->
+      <div class="service-diagnostics">
+        {% if svc.latency_ms is not none %}
+        <span class="diagnostic-item">
+          <span class="diagnostic-label">Response time:</span>
+          <span class="diagnostic-val font-mono">{{ svc.latency_ms }}ms</span>
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Last-checked bar ── -->
+  {% set last_ts = services[0].last_checked if services else '' %}
+  <div class="status-footer-row">
+    <span class="timestamp-label" id="last-updated" data-ts="{{ last_ts }}">Checking…</span>
+    <span class="refresh-indicator">
+      <span class="refresh-spinner"></span>
+      <span id="countdown">Reloading...</span>
+    </span>
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">⚙️</div>
+    <h3>No Services Monitored</h3>
+    <p>Please define services in <code>service_list.json</code> using the format described in the README.</p>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="container footer-inner-wrap">
+    <span>Powered by <a href="https://github.com/qwertyguy16/Argus-Group-Status-Page" target="_blank">Argus</a></span>
+    <span class="footer-divider">|</span>
+    <span>&copy; {{ now.year if now else '2026' }} Argus Group</span>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
