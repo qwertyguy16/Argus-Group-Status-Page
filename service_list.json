@@ -6,7 +6,7 @@
   },
   {
     "name": "API Server",
-    "host": "https://api.argusgroup.co.uk/v2/status",
+    "url": "https://api.argusgroup.co.uk/v2/status",
     "description": "Core REST API"
   },
   {
@@ -17,7 +17,7 @@
   },
   {
     "name": "CDN Service",
-    "host": "https://cdn.argusgroup.co.uk",
+    "url": "https://cdn.argusgroup.co.uk",
     "description": "File Hosting"
   }
 ]
