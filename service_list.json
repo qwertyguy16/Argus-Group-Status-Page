@@ -1,19 +1,23 @@
 [
   {
     "name": "Main Website",
-    "url": "https://example.com",
+    "url": "https://argusgroup.co.uk",
     "description": "Primary public-facing website"
   },
   {
     "name": "API Server",
-    "host": "192.168.1.10",
-    "port": 8080,
+    "host": "https://api.argusgroup.co.uk/v2/status",
     "description": "Core REST API"
   },
   {
-    "name": "Game Server",
-    "host": "game.example.com",
-    "port": 25565,
-    "description": "Minecraft game server"
+    "name": "Argus Security Bot",
+    "host": "207.180.213.189",
+    "port": 3434,
+    "description": "Public Discord Bot"
+  },
+  {
+    "name": "CDN Service",
+    "host": "https://cdn.argusgroup.co.uk",
+    "description": "File Hosting"
   }
 ]
